@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+<?php
+    // Połączenie z bazą danych
+    $con = mysqli_connect("localhost", "root", "", "sklep");
+
+    // Sprawdzenie połączenia
+    if (mysqli_connect_errno()) {
+        echo "Failed to connect to MySQL: " . mysqli_connect_error();
+        exit();
+    } else {
+        echo "CONNECTION OK<br>";
+    }
+
+    if (isset($_POST['add'])) {
+        if (!empty($_POST['imie']) && !empty($_POST['nazwisko']) && !empty($_POST['wiek'])) {
+            $imie = mysqli_real_escape_string($con, $_POST['imie']);
+            $nazwisko = mysqli_real_escape_string($con, $_POST['nazwisko']);
+            $wiek = (int)$_POST['wiek'];
+
+            $addsql = "INSERT INTO users (imie, nazwisko, wiek) VALUES ('$imie', '$nazwisko', '$wiek')";
+            
+            if (mysqli_query($con, $addsql)) {
+                echo "RECORD ADDED<br>";
+            } else {
+                echo "ADD ERROR: " . mysqli_error($con) . "<br>";
+            }
+        } else {
+            echo '<p style="color:red">Wypełnij wszystkie pola</p>';
+        }
+    }
+
+    
+    if (isset($_POST['delete'])) {
+        if (!empty($_POST['id'])) {
+            $id = (int)$_POST['id'];
+            
+            $delsql = "DELETE FROM users WHERE id = $id";
+
+            if (mysqli_query($con, $delsql)) {
+                echo "RECORD DELETED<br>";
+            } else {
+                echo "DELETE ERROR: " . mysqli_error($con) . "<br>";
+            }
+        }
+           
+        
+    }
+
+
+    $sql = "SELECT * FROM users";
+    $result = mysqli_query($con, $sql);
+
+    echo '<table>';
+    echo '<tr><th>ID</th><th>Imię</th><th>Nazwisko</th><th>Wiek</th><th>Edit</th></tr>';
+    
+    while ($row = mysqli_fetch_assoc($result)) {
+        echo "<tr>";
+        echo "<td>" . $row['id'] . "</td>";
+        echo "<td>" . $row['imie'] . "</td>";
+        echo "<td>" . $row['nazwisko'] . "</td>";
+        echo "<td>" . $row['wiek'] . "</td>";
+        echo '<td>
+                <form method="POST" action="" style="display:inline;">
+                    <input type="hidden" name="id" value="' . $row['id'] . '">
+                    <button type="submit" name="delete">DELETE</button>
+                    <button type="submit" name="update">UPDATE</button>
+                    
+                    
+                </form>
+              </td>';
+        echo "</tr>";
+    }
+    echo "</table>";
+?>
+
+
+<form method="POST" action="">
+    <h3>Dodaj użytkownika</h3>
+    <label>Imię: <input type="text" name="imie"></label><br>
+    <label>Nazwisko: <input type="text" name="nazwisko"></label><br>
+    <label>Wiek: <input type="number" name="wiek"></label><br>
+    <button type="submit" name="add">Dodaj</button>
+</form>
+
+</body>
+</html>
